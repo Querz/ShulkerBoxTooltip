@@ -6,21 +6,21 @@ import com.misterpemodder.shulkerboxtooltip.api.color.ColorKey;
 import com.misterpemodder.shulkerboxtooltip.impl.config.Configuration;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.block.Block;
-import net.minecraft.block.ShulkerBoxBlock;
-import net.minecraft.block.entity.ShulkerBoxBlockEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.DyeColor;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.ShulkerBoxBlock;
+import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class ShulkerBoxPreviewProvider extends BlockEntityAwarePreviewRenderer<ShulkerBoxBlockEntity> {
+public class ShulkerBoxPreviewProvider extends InventoryAwarePreviewProvider<ShulkerBoxBlockEntity> {
   public ShulkerBoxPreviewProvider(int maxRowSize, Supplier<? extends ShulkerBoxBlockEntity> blockEntitySupplier) {
     super(maxRowSize, blockEntitySupplier);
   }
@@ -33,7 +33,7 @@ public class ShulkerBoxPreviewProvider extends BlockEntityAwarePreviewRenderer<S
   @Override
   @Environment(EnvType.CLIENT)
   public ColorKey getWindowColorKey(PreviewContext context) {
-    DyeColor dye = ((ShulkerBoxBlock) Block.getBlockFromItem(context.stack().getItem())).getColor();
+    DyeColor dye = ((ShulkerBoxBlock) Block.byItem(context.stack().getItem())).getColor();
 
     if (dye == null)
       return ColorKey.SHULKER_BOX;
@@ -58,19 +58,16 @@ public class ShulkerBoxPreviewProvider extends BlockEntityAwarePreviewRenderer<S
   }
 
   @Override
-  public List<Text> addTooltip(PreviewContext context) {
+  public List<Component> addTooltip(PreviewContext context) {
     ItemStack stack = context.stack();
-    NbtCompound compound = stack.getNbt();
 
-    if (this.canUseLootTables() && compound != null && compound.contains("BlockEntityTag", 10)) {
-      NbtCompound blockEntityTag = compound.getCompound("BlockEntityTag");
+    // Restore the vanilla behavior of adding question marks to the tooltip when the item has a loot table
+    if (this.canUseLootTables()
+        && ShulkerBoxTooltip.config.tooltip.lootTableInfoType == Configuration.LootTableInfoType.HIDE && stack.has(
+        DataComponents.CONTAINER_LOOT)) {
+      Style style = Style.EMPTY.withColor(ChatFormatting.GRAY);
 
-      if (blockEntityTag != null && blockEntityTag.contains("LootTable", 8)
-          && ShulkerBoxTooltip.config.tooltip.lootTableInfoType == Configuration.LootTableInfoType.HIDE) {
-        Style style = Style.EMPTY.withColor(Formatting.GRAY);
-
-        return Collections.singletonList(Text.literal("???????").setStyle(style));
-      }
+      return Collections.singletonList(Component.literal("???????").setStyle(style));
     }
     return super.addTooltip(context);
   }

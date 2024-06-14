@@ -153,7 +153,7 @@ curseforge {
             addGameVersion gameVersion
         }
         addGameVersion 'Fabric'
-        addGameVersion 'Java 17'
+        addGameVersion 'Java 21'
         mainArtifact(remapJar) {
             displayName = "[Fabric $project.mcVersionFull] v${project.version}"
         }

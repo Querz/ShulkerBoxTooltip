@@ -8,6 +8,7 @@ import com.misterpemodder.shulkerboxtooltip.impl.config.ConfigurationHandler;
 import com.misterpemodder.shulkerboxtooltip.impl.tooltip.PreviewTooltipComponent;
 import com.misterpemodder.shulkerboxtooltip.impl.tooltip.PreviewTooltipData;
 import com.mojang.datafixers.util.Either;
+import java.util.List;
 import net.minecraft.client.item.TooltipData;
 import net.minecraft.text.StringVisitable;
 import net.minecraftforge.api.distmarker.Dist;
@@ -46,8 +47,8 @@ public final class ShulkerBoxTooltipClientImpl extends ShulkerBoxTooltipClient {
   }
 
   private static void onGatherTooltipComponents(RenderTooltipEvent.GatherComponents event) {
-    var context = PreviewContext.of(event.getItemStack(),
-        ShulkerBoxTooltipClient.client == null ? null : ShulkerBoxTooltipClient.client.player);
+    var context = PreviewContext.builder(event.getItemStack()).withOwner(
+        ShulkerBoxTooltipClient.client == null ? null : ShulkerBoxTooltipClient.client.player).build();
     var elements = event.getTooltipElements();
 
     // Add the preview window at the beginning of the tooltip

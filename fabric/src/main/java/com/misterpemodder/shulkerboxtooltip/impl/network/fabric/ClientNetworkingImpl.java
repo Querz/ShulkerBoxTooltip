@@ -2,75 +2,67 @@ package com.misterpemodder.shulkerboxtooltip.impl.network.fabric;
 
 import com.misterpemodder.shulkerboxtooltip.ShulkerBoxTooltip;
 import com.misterpemodder.shulkerboxtooltip.impl.network.ClientNetworking;
-import com.misterpemodder.shulkerboxtooltip.impl.network.RegistrationChangeType;
+import com.misterpemodder.shulkerboxtooltip.impl.network.channel.C2SChannel;
+import com.misterpemodder.shulkerboxtooltip.impl.network.context.S2CMessageContext;
 import com.misterpemodder.shulkerboxtooltip.impl.network.message.C2SMessages;
+import com.misterpemodder.shulkerboxtooltip.impl.network.message.MessageType;
 import com.misterpemodder.shulkerboxtooltip.impl.network.message.S2CMessages;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.C2SPlayChannelEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@Environment(EnvType.CLIENT)
-public class ClientNetworkingImpl extends ClientNetworking {
-  private final static Map<Identifier, RegistrationChangeListener> REGISTRATION_CHANGE_LISTENERS = new HashMap<>();
+public final class ClientNetworkingImpl {
+  private static final Map<ResourceLocation, FabricC2SChannel<?>> C2S_CHANNELS = new HashMap<>();
 
-  /**
-   * Implements {@link ClientNetworking#createC2SPacket(Identifier, PacketByteBuf)}.
-   */
-  public static Packet<?> createC2SPacket(Identifier channelId, PacketByteBuf buf) {
-    return ClientPlayNetworking.createC2SPacket(channelId, buf);
+  private ClientNetworkingImpl() {
   }
 
   /**
    * Implements {@link ClientNetworking#init()}.
    */
+  @Environment(EnvType.CLIENT)
   public static void init() {
     if (ShulkerBoxTooltip.config.preview.serverIntegration) {
-      C2SMessages.init();
+      S2CMessages.registerPayloadTypes();
+      C2SMessages.registerPayloadTypes();
       ClientPlayConnectionEvents.INIT.register((handler, client) -> S2CMessages.registerAll());
       ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> C2SMessages.onDisconnectFromServer());
+
+      C2SPlayChannelEvents.REGISTER.register(
+          (handler, sender, server, ids) -> ids.forEach(ClientNetworkingImpl::onRegisterChannel));
+      C2SPlayChannelEvents.UNREGISTER.register(
+          (handler, sender, server, ids) -> ids.forEach(ClientNetworkingImpl::onUnregisterChannel));
     }
     ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> ClientNetworking.onJoinServer(client));
   }
 
   /**
-   * Implements {@link ClientNetworking#registerS2CReceiver(Identifier, PacketReceiver)} ()}.
+   * Implements {@link ClientNetworking#createC2SChannel(ResourceLocation, MessageType)}.
    */
-  public static void registerS2CReceiver(Identifier channelId, PacketReceiver receiver) {
-    ClientPlayNetworking.registerReceiver(channelId, (client, handler, buf, responseSender) -> receiver.handle(buf));
+  public static <T> C2SChannel<T> createC2SChannel(ResourceLocation id, MessageType<T> type) {
+    var channel = new FabricC2SChannel<>(id, type);
+    C2S_CHANNELS.put(id, channel);
+    return channel;
   }
 
-  /**
-   * Implements {@link ClientNetworking#unregisterS2CReceiver(Identifier)} ()}.
-   */
-  public static void unregisterS2CReceiver(Identifier channelId) {
-    ClientPlayNetworking.unregisterReceiver(channelId);
+  @Environment(EnvType.CLIENT)
+  @SuppressWarnings("unchecked")
+  private static <T> void onRegisterChannel(ResourceLocation id) {
+    FabricC2SChannel<T> channel = (FabricC2SChannel<T>) C2S_CHANNELS.get(id);
+    if (channel != null)
+      channel.onRegister(new S2CMessageContext<>(channel));
   }
 
-  /**
-   * Implements {@link ClientNetworking#addRegistrationChangeListener(Identifier, RegistrationChangeListener)} ()}.
-   */
-  public static void addRegistrationChangeListener(Identifier channelId, RegistrationChangeListener listener) {
-    REGISTRATION_CHANGE_LISTENERS.put(channelId, listener);
-  }
-
-  private static void dispatchRegistrationChangeEvent(Identifier channelId, RegistrationChangeType type) {
-    RegistrationChangeListener listener = REGISTRATION_CHANGE_LISTENERS.get(channelId);
-    if (listener != null)
-      listener.onRegistrationChange(type);
-  }
-
-  static {
-    C2SPlayChannelEvents.REGISTER.register((handler, sender, server, channels) -> channels.forEach(
-        c -> ClientNetworkingImpl.dispatchRegistrationChangeEvent(c, RegistrationChangeType.REGISTER)));
-    C2SPlayChannelEvents.UNREGISTER.register((handler, sender, server, channels) -> channels.forEach(
-        c -> ClientNetworkingImpl.dispatchRegistrationChangeEvent(c, RegistrationChangeType.UNREGISTER)));
+  @Environment(EnvType.CLIENT)
+  @SuppressWarnings("unchecked")
+  private static <T> void onUnregisterChannel(ResourceLocation id) {
+    FabricC2SChannel<T> channel = (FabricC2SChannel<T>) C2S_CHANNELS.get(id);
+    if (channel != null)
+      channel.onUnregister(new S2CMessageContext<>(channel));
   }
 }

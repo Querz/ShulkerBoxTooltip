@@ -1,3 +1,27 @@
+4.1.0-alpha.4+1.20.6:
+- Added support for NeoForge
+- Fixed "Empty" text always added to pickable containers
+
+====================================================================================================
+4.1.0-alpha.3+1.20.6:
+- Re-enabled networking support and ender chest preview.
+
+====================================================================================================
+4.1.0-alpha.2+1.20.6:
+- Fixed crashes on Quilt related to built-in Mixin library not compatible with Java 21
+
+====================================================================================================
+4.1.0-alpha.1+1.20.6:
+- Updated to Minecraft 1.20.6 (#151)
+- Disabled support for Forge: a migration to NeoForge is considered for the future.
+- Temporary: disabled networking support and ender chest preview.
+- Added German localization by ReneMuetti.
+- Added preview support for decorated pots, chiseled bookshelves, and lecterns.
+- Fixed previews swapping sizes when viewing containers with different slot counts.
+- Added highlight for the currently selected slot in the preview window.
+- Show dropper/dispenser previews as a 3x3 grid instead of 9x3.
+
+====================================================================================================
 4.0.8+1.20.4:
 - Updated to Minecraft 1.20.4 (#143)
 - Fixed dyed leather armor having wrong colors (#144)

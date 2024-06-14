@@ -1,5 +1,6 @@
 package com.misterpemodder.shulkerboxtooltip.impl.renderer;
 
+import com.misterpemodder.shulkerboxtooltip.ShulkerBoxTooltipClient;
 import com.misterpemodder.shulkerboxtooltip.api.PreviewContext;
 import com.misterpemodder.shulkerboxtooltip.api.PreviewType;
 import com.misterpemodder.shulkerboxtooltip.api.config.PreviewConfiguration;
@@ -8,20 +9,24 @@ import com.misterpemodder.shulkerboxtooltip.api.provider.PreviewProvider;
 import com.misterpemodder.shulkerboxtooltip.api.renderer.PreviewRenderer;
 import com.misterpemodder.shulkerboxtooltip.impl.util.MergedItemStack;
 import com.misterpemodder.shulkerboxtooltip.impl.util.ShulkerBoxTooltipUtil;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Identifier;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Environment(EnvType.CLIENT)
 public abstract class BasePreviewRenderer implements PreviewRenderer {
   protected PreviewType previewType;
   protected PreviewConfiguration config;
   protected int compactMaxRowSize;
   protected int maxRowSize;
-  protected Identifier textureOverride;
+  protected ResourceLocation textureOverride;
   protected PreviewProvider provider;
   protected List<MergedItemStack> items;
   protected PreviewContext previewContext;
@@ -41,7 +46,11 @@ public abstract class BasePreviewRenderer implements PreviewRenderer {
     this.slotXOffset = slotXOffset;
     this.slotYOffset = slotYOffset;
 
-    this.setPreview(PreviewContext.of(ItemStack.EMPTY), EmptyPreviewProvider.INSTANCE);
+    var world = ShulkerBoxTooltipClient.client == null ? null : ShulkerBoxTooltipClient.client.level;
+
+    this.setPreview(PreviewContext.builder(ItemStack.EMPTY)
+        .withRegistryLookup(world == null ? null : world.registryAccess())
+        .build(), EmptyPreviewProvider.INSTANCE);
   }
 
   protected int getMaxRowSize() {
@@ -78,22 +87,33 @@ public abstract class BasePreviewRenderer implements PreviewRenderer {
   }
 
   /**
+   * Get the slot id at the given coordinates if X and Y are in bounds of the preview window
+   *
+   * @return The slot id at the given coordinates, or -1 if not found.
+   */
+  private int getSlotAt(int x, int y) {
+    int slot = -1;
+
+    // Get the slot id at the given coordinates if X and Y are in bounds of the preview window
+    if (x + 1 >= this.slotXOffset && y + 1 >= this.slotYOffset) {
+      int maxRowSize = this.getMaxRowSize();
+      int slotX = (x + 1 - this.slotXOffset) / this.slotWidth;
+      int slotY = (y + 1 - this.slotYOffset) / this.slotHeight;
+
+      if (slotX < maxRowSize)
+        slot = slotX + slotY * maxRowSize;
+    }
+
+    return slot;
+  }
+
+  /**
    * @param x Top-left corner X coordinate of the preview window
    * @param y Top-left corner Y coordinate of the preview window
    * @return The item stack at the given coordinates, or {@link ItemStack#EMPTY} if not found.
    */
   private ItemStack getStackAt(int x, int y) {
-    int slot = -1;
-
-    // Get the slot id at the given coordinates if X and Y are in bounds of the preview window
-    if (x > this.slotXOffset && y > this.slotYOffset) {
-      int maxRowSize = this.getMaxRowSize();
-      int slotX = (x - this.slotXOffset) / this.slotWidth;
-      int slotY = (y - this.slotYOffset) / this.slotHeight;
-
-      if (slotX < maxRowSize)
-        slot = slotX + slotY * maxRowSize;
-    }
+    int slot = this.getSlotAt(x, y);
 
     if (this.previewType == PreviewType.COMPACT) {
       if (slot < 0 || slot >= this.items.size())
@@ -111,7 +131,7 @@ public abstract class BasePreviewRenderer implements PreviewRenderer {
     }
   }
 
-  private void drawItem(ItemStack stack, int x, int y, DrawContext context, TextRenderer textRenderer, int slot,
+  private void drawItem(ItemStack stack, int x, int y, GuiGraphics graphics, Font font, int slot,
       boolean shortItemCount) {
     String countLabel = "";
     int maxRowSize = this.getMaxRowSize();
@@ -127,21 +147,21 @@ public abstract class BasePreviewRenderer implements PreviewRenderer {
     x = this.slotXOffset + x + this.slotWidth * (slot % maxRowSize);
     y = this.slotYOffset + y + this.slotHeight * (slot / maxRowSize);
 
-    context.drawItem(stack, x, y);
-    context.drawItemInSlot(textRenderer, stack, x, y, countLabel);
+    graphics.renderItem(stack, x, y);
+    graphics.renderItemDecorations(font, stack, x, y, countLabel);
   }
 
-  protected void drawItems(int x, int y, DrawContext context, TextRenderer textRenderer) {
+  protected void drawItems(int x, int y, GuiGraphics graphics, Font font) {
     if (this.previewType == PreviewType.COMPACT) {
       boolean shortItemCounts = this.config.shortItemCounts();
 
       for (int slot = 0, size = this.items.size(); slot < size; ++slot) {
-        this.drawItem(this.items.get(slot).get(), x, y, context, textRenderer, slot, shortItemCounts);
+        this.drawItem(this.items.get(slot).get(), x, y, graphics, font, slot, shortItemCounts);
       }
     } else {
       for (MergedItemStack compactor : this.items) {
         for (int slot = 0, size = compactor.size(); slot < size; ++slot) {
-          this.drawItem(compactor.getSubStack(slot), x, y, context, textRenderer, slot, false);
+          this.drawItem(compactor.getSubStack(slot), x, y, graphics, font, slot, false);
         }
       }
     }
@@ -151,11 +171,23 @@ public abstract class BasePreviewRenderer implements PreviewRenderer {
   /**
    * Draw the tooltip that may be show when hovering a preview within a locked tooltip.
    */
-  protected void drawInnerTooltip(int x, int y, DrawContext context, TextRenderer textRenderer, int mouseX,
-      int mouseY) {
+  protected void drawInnerTooltip(int x, int y, GuiGraphics graphics, Font font, int mouseX, int mouseY) {
     ItemStack stack = this.getStackAt(mouseX - x, mouseY - y);
 
     if (!stack.isEmpty())
-      context.drawItemTooltip(textRenderer, stack, mouseX, mouseY);
+      graphics.renderTooltip(font, stack, mouseX, mouseY);
+  }
+
+  protected void drawSlotHighlight(int x, int y, GuiGraphics graphics, int mouseX, int mouseY) {
+    int slot = this.getSlotAt(mouseX - x, mouseY - y);
+
+    if (slot >= 0 && slot < this.getInvSize()) {
+      int maxRowSize = this.getMaxRowSize();
+
+      x = this.slotXOffset + x + this.slotWidth * (slot % maxRowSize);
+      y = this.slotYOffset + y + this.slotHeight * (slot / maxRowSize);
+
+      AbstractContainerScreen.renderSlotHighlight(graphics, x, y, 0);
+    }
   }
 }

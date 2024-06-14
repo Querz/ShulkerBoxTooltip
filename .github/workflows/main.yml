@@ -16,37 +16,42 @@ jobs:
 
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
-    - name: Setup jdk 17
-      uses: actions/setup-java@v3
+    - name: Setup jdk 21
+      uses: actions/setup-java@v4
       with:
         distribution: adopt
-        java-version: 17
+        java-version: 21
 
     - name: Validate gradle wrapper
-      uses: gradle/wrapper-validation-action@v1
+      uses: gradle/actions/wrapper-validation@v3
 
-    - name: Setup Gradle and Build
-      uses: gradle/gradle-build-action@v2
-      with:
-        gradle-version: wrapper
-        arguments: build --scan
-        cache-read-only: false
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
+
+    - name: Gradle Build
+      run: ./gradlew build --scan
       env:
         GRADLE_TOS_AGREE: yes
 
     - name: Upload Fabric Artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: fabric-artifacts
         path: fabric/build/libs/
 
-    - name: Upload Forge Artifacts
-      uses: actions/upload-artifact@v3
+    - name: Upload NeoForge Artifacts
+      uses: actions/upload-artifact@v4
       with:
-        name: forge-artifacts
-        path: forge/build/libs/
+        name: neoforge-artifacts
+        path: neoforge/build/libs/
+
+#    - name: Upload Forge Artifacts
+#      uses: actions/upload-artifact@v4
+#      with:
+#        name: forge-artifacts
+#        path: forge/build/libs/
 
   release_github:
     name: "Release on GitHub"
@@ -56,7 +61,7 @@ jobs:
 
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Read Project & Minecraft Version
       id: read_versions
@@ -68,33 +73,29 @@ jobs:
     - name: Read Changelog
       id: read_changelog
       shell: bash
-      run: |
-        CHANGELOG=$(sed '/===/Q' changelog.txt | grep -)
-        echo "Changelog:\n$CHANGELOG"
-        CHANGELOG="${CHANGELOG//'%'/'%25'}"
-        CHANGELOG="${CHANGELOG//$'\n'/'%0A'}"
-        CHANGELOG="${CHANGELOG//$'\r'/'%0D'}" 
-        echo "changelog=$CHANGELOG" >> $GITHUB_OUTPUT
+      run: sed '/===/Q' changelog.txt > current-changelog.txt
 
     - name: Download Artifacts
       id: download_artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         path: build_artifacts
 
     - name: GitHub Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ github.ref }}
         name: Release ${{ steps.read_versions.outputs.projectBaseVersion }} for Minecraft ${{ steps.read_versions.outputs.mcVersionFull }}
-        body: ${{ steps.read_changelog.outputs.changelog }}
+        body_path: ./current-changelog.txt
         draft: false
         prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') }}
+        token: ${{ secrets.GH_RELEASE_TOKEN }}
         files: |
           ${{ steps.download_artifacts.outputs.download-path }}/fabric-artifacts/*
-          ${{ steps.download_artifacts.outputs.download-path }}/forge-artifacts/*
+          ${{ steps.download_artifacts.outputs.download-path }}/neoforge-artifacts/*
+#          ${{ steps.download_artifacts.outputs.download-path }}/forge-artifacts/*
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GH_RELEASE_TOKEN }}
 
   release_curseforge:
     name: Release on Curseforge
@@ -104,20 +105,19 @@ jobs:
 
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
-    - name: Setup jdk 17
-      uses: actions/setup-java@v3
+    - name: Setup jdk 21
+      uses: actions/setup-java@v4
       with:
         distribution: adopt
-        java-version: 17
+        java-version: 21
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
 
     - name: Curseforge Publish
-      uses: gradle/gradle-build-action@v2
-      with:
-        gradle-version: wrapper
-        arguments: curseforge
-        cache-read-only: true
+      run: ./gradlew curseforge
       env:
         CURSE_API_KEY: ${{ secrets.CURSE_API_KEY }}
 
@@ -129,20 +129,19 @@ jobs:
 
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
-    - name: Setup jdk 17
-      uses: actions/setup-java@v3
+    - name: Setup jdk 21
+      uses: actions/setup-java@v4
       with:
         distribution: adopt
-        java-version: 17
+        java-version: 21
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
 
     - name: Modrinth Publish
-      uses: gradle/gradle-build-action@v2
-      with:
-        gradle-version: wrapper
-        arguments: modrinth
-        cache-read-only: true
+      run: ./gradlew modrinth
       env:
         MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
 
@@ -154,20 +153,19 @@ jobs:
 
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
-    - name: Setup jdk 17
-      uses: actions/setup-java@v3
+    - name: Setup jdk 21
+      uses: actions/setup-java@v4
       with:
         distribution: adopt
-        java-version: 17
+        java-version: 21
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
 
     - name: Maven Publish
-      uses: gradle/gradle-build-action@v2
-      with:
-        gradle-version: wrapper
-        arguments: publish
-        cache-read-only: true
+      run: ./gradlew publish
       env:
         MAVEN_USER: ${{ secrets.MAVEN_USER }}
         MAVEN_PASS: ${{ secrets.MAVEN_PASS }}

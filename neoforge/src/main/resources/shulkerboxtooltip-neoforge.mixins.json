@@ -1,0 +1,8 @@
+{
+  "parent": "shulkerboxtooltip-common.mixins.json",
+  "package": "com.misterpemodder.shulkerboxtooltip.mixin",
+  "client": [
+    "client.neoforge.AbstractContainerScreenMixin",
+    "client.neoforge.TooltipRenderUtilMixin"
+  ]
+}

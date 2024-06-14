@@ -148,7 +148,7 @@ curseforge {
             addGameVersion gameVersion
         }
         addGameVersion 'Forge'
-        addGameVersion 'Java 17'
+        addGameVersion 'Java 21'
         mainArtifact(remapJar) {
             displayName = "[Forge $project.mcVersionFull] v${project.version}"
         }

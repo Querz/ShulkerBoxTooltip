@@ -19,6 +19,7 @@ This mod allows you to see a preview window of a shulker box contents when hover
 - **com.misterpemodder:shulkerboxtooltip-common**: Platform-agnostic API
 - **com.misterpemodder:shulkerboxtooltip-fabric**: Fabric Implementation
 - **com.misterpemodder:shulkerboxtooltip-forge**: Forge-specific API + Implementation
+- **com.misterpemodder:shulkerboxtooltip-neoforge**: NeoForge-specific API + Implementation
 
 ### Declaring the dependency (Fabric Loom/Architectury Loom)
 ```gradle
@@ -27,7 +28,7 @@ repositories {
 }
 
 dependencies {
-    // Change to 'shulkerboxtooltip-forge' or 'shulkerboxtooltip-common' depending on the artifact
+    // Change to 'shulkerboxtooltip-forge', 'shulkerboxtooltip-neoforge', or 'shulkerboxtooltip-common' depending on the artifact
     modImplementation("com.misterpemodder:shulkerboxtooltip-fabric:VERSION") { transitive false }
 }
 ```
@@ -44,7 +45,7 @@ On Fabric, add your plugin class as an entry point of type `"shulkerboxtooltip"`
 }
 ```
 
-On Forge, register your plugin by adding an extension point in your mod's initialization code:
+On Forge and NeoForge, register your plugin by adding an extension point in your mod's initialization code:
 ```java
 ModLoadingContext.get().registerExtensionPoint(ShulkerBoxTooltipPlugin.class,
     () -> new ShulkerBoxTooltipPlugin(MyModShulkerBoxTooltipPlugin::new));

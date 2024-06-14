@@ -1,53 +1,22 @@
 package com.misterpemodder.shulkerboxtooltip.impl.network.channel;
 
-import com.misterpemodder.shulkerboxtooltip.ShulkerBoxTooltip;
-import com.misterpemodder.shulkerboxtooltip.impl.network.ClientNetworking;
-import com.misterpemodder.shulkerboxtooltip.impl.network.message.MessageType;
-import com.misterpemodder.shulkerboxtooltip.impl.network.ServerNetworking;
-import com.misterpemodder.shulkerboxtooltip.impl.network.context.C2SMessageContext;
 import com.misterpemodder.shulkerboxtooltip.impl.network.context.MessageContext;
-import com.misterpemodder.shulkerboxtooltip.impl.network.context.S2CMessageContext;
-import com.misterpemodder.shulkerboxtooltip.impl.network.RegistrationChangeType;
-import net.minecraft.util.Identifier;
+import com.misterpemodder.shulkerboxtooltip.impl.network.message.MessageType;
+import net.minecraft.resources.ResourceLocation;
 
 /**
- * Base network channel wrapper.
+ * Base network channel abstraction.
  *
- * @param <MSG> The message data type.
+ * @param <T> The message data type.
  */
-public sealed class Channel<MSG> permits C2SChannel, S2CChannel {
-  protected final Identifier id;
-  protected final MessageType<MSG> messageType;
+public interface Channel<T> {
+  ResourceLocation getId();
 
-  protected Channel(Identifier id, MessageType<MSG> messageType) {
-    this.id = id;
-    this.messageType = messageType;
+  MessageType<T> getMessageType();
 
-    ServerNetworking.addRegistrationChangeListener(this.id,
-        (sender, type) -> this.onRegistrationChange(type, new C2SMessageContext<>(sender, this)));
+  void registerPayloadType();
 
-    if (ShulkerBoxTooltip.isClient()) {
-      ClientNetworking.addRegistrationChangeListener(this.id,
-          type -> this.onRegistrationChange(type, new S2CMessageContext<>(this)));
-    }
-  }
+  void onRegister(MessageContext<T> context);
 
-  public Identifier getId() {
-    return this.id;
-  }
-
-  private void onRegistrationChange(RegistrationChangeType type, MessageContext<MSG> context) {
-    switch (type) {
-      case REGISTER -> this.onRegister(context);
-      case UNREGISTER -> this.onUnregister(context);
-    }
-  }
-
-  protected void onRegister(MessageContext<MSG> context) {
-    this.messageType.onRegister(context);
-  }
-
-  protected void onUnregister(MessageContext<MSG> context) {
-    this.messageType.onUnregister(context);
-  }
+  void onUnregister(MessageContext<T> context);
 }

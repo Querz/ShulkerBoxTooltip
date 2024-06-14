@@ -4,12 +4,12 @@
   "compatibilityLevel": "JAVA_17",
   "minVersion": "0.8",
   "client": [
-    "client.DrawContextMixin",
-    "client.HandledScreenMixin",
+    "client.GuiGraphicsMixin",
+    "client.AbstractContainerScreenMixin",
     "client.ItemStackMixin",
-    "client.KeyboardMixin",
+    "client.KeyboardHandlerMixin",
     "client.ShulkerBoxBlockMixin",
-    "client.TooltipBackgroundRendererMixin"
+    "client.TooltipRenderUtilMixin"
   ],
   "mixins": [
   ],

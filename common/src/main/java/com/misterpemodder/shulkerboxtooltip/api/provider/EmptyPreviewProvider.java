@@ -1,18 +1,20 @@
 package com.misterpemodder.shulkerboxtooltip.api.provider;
 
 import com.misterpemodder.shulkerboxtooltip.api.PreviewContext;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.Collections;
 import java.util.List;
 
 /**
  * A PreviewProvider that does nothing.
+ *
  * @since 1.3.0
  */
 public class EmptyPreviewProvider implements PreviewProvider {
   /**
    * The EmptyPreviewProvider instance.
+   *
    * @since 1.3.0
    */
   public static final PreviewProvider INSTANCE = new EmptyPreviewProvider();

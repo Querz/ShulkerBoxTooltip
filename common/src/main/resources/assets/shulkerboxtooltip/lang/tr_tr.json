@@ -17,8 +17,6 @@
   "text.autoconfig.shulkerboxtooltip.category.server": "Sunucu",
   "text.autoconfig.shulkerboxtooltip.option.preview.alwaysOn": "Her Zaman Açık",
   "text.autoconfig.shulkerboxtooltip.option.preview.alwaysOn.tooltip": "Açık iken, önizleme tuşu basmana gerek\nkalmadan önizlemeyi her zaman gösterir.",
-  "text.autoconfig.shulkerboxtooltip.option.preview.compactPreviewNbtBehavior": "Kompakt NBT Önizlemesi",
-  "text.autoconfig.shulkerboxtooltip.option.preview.compactPreviewNbtBehavior.tooltip": "Kompakt modda iken, farklı NBT verisine sahip\nama aynı ID'ye sahip eşyalar nasıl küçültülmeli.\nYoksay:\nNBT verisini yoksayar\nİlk Eşya:\nAynı NBT'ye sahip eşyalar ilk eşyaymış gibi gösterilir\nAyrı:\nFarklı NBT verisine sahip eşyaları birbirinden ayırır.",
   "text.autoconfig.shulkerboxtooltip.option.preview.defaultMaxRowSize": "En Fazla Satır Sayısı",
   "text.autoconfig.shulkerboxtooltip.option.preview.defaultMaxRowSize.tooltip": "Bir satırda bulunacak maksimum eşya sayısı\nModla düzenlenmiş pencereler etkilenmeyebilir",
   "text.autoconfig.shulkerboxtooltip.option.preview.enable": "Önizlemeyi Etkinleştir",

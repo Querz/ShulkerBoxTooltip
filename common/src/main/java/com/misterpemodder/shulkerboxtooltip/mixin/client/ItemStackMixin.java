@@ -1,30 +1,36 @@
 package com.misterpemodder.shulkerboxtooltip.mixin.client;
 
 import com.misterpemodder.shulkerboxtooltip.ShulkerBoxTooltip;
-import net.minecraft.block.ShulkerBoxBlock;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.block.ShulkerBoxBlock;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.Slice;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.function.Consumer;
 
 @Mixin(ItemStack.class)
 public class ItemStackMixin {
-  @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/nbt/NbtCompound;getType(Ljava/lang/String;)B"), method =
-      "Lnet/minecraft/item/ItemStack;getTooltip"
-          + "(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/client/item/TooltipContext;)"
-          + "Ljava/util/List;", slice = @Slice(from = @At(value = "CONSTANT", ordinal = 0, args = {
-      "stringValue=Lore"})))
-  private byte removeLore(NbtCompound tag, String key) {
-    //noinspection DataFlowIssue
-    Item item = ((ItemStack) (Object) this).getItem();
+  @Inject(at = @At("HEAD"), method = "addToTooltip("
+      + "Lnet/minecraft/core/component/DataComponentType;Lnet/minecraft/world/item/Item$TooltipContext;"
+      + "Ljava/util/function/Consumer;Lnet/minecraft/world/item/TooltipFlag;)V", cancellable = true)
+  private void removeLore(DataComponentType<?> componentType, Item.TooltipContext context,
+      Consumer<Component> textConsumer, TooltipFlag type, CallbackInfo ci) {
+    if (componentType == DataComponents.LORE) {
+      Item item = ((ItemStack) (Object) this).getItem();
 
-    if (ShulkerBoxTooltip.config != null && ShulkerBoxTooltip.config.tooltip.hideShulkerBoxLore
-        && item instanceof BlockItem blockitem && blockitem.getBlock() instanceof ShulkerBoxBlock)
-      return 0;
-    return tag.getType(key);
+      //noinspection UnreachableCode
+      if (ShulkerBoxTooltip.config != null && ShulkerBoxTooltip.config.tooltip.hideShulkerBoxLore
+          && item instanceof BlockItem blockitem && blockitem.getBlock() instanceof ShulkerBoxBlock) {
+        ci.cancel();
+      }
+    }
   }
 }

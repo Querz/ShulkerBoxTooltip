@@ -17,8 +17,6 @@
   "text.autoconfig.shulkerboxtooltip.category.server": "Server",
   "text.autoconfig.shulkerboxtooltip.option.preview.alwaysOn": "Sempre Attivo",
   "text.autoconfig.shulkerboxtooltip.option.preview.alwaysOn.tooltip": "Se attivo, l'anteprima degli item verrà sempre mostrata,\nanche senza la pressione del tasto.",
-  "text.autoconfig.shulkerboxtooltip.option.preview.compactPreviewNbtBehavior": "Anteprima compatta degli NBT",
-  "text.autoconfig.shulkerboxtooltip.option.preview.compactPreviewNbtBehavior.tooltip": "In modalità compatta, anteprima item con stesso ID\nma con dati NBT differenti\nIgnora:\n Ignora i dati NBT\nPrimo Item:\n Gli Item con ID uguale saranno raggruppati, visualizzando solo\n i dati NBT del primo item\nSepara:\n Separa gli items che hanno dati NBT diversi",
   "text.autoconfig.shulkerboxtooltip.option.preview.defaultMaxRowSize": "Dimensione massima della riga",
   "text.autoconfig.shulkerboxtooltip.option.preview.defaultMaxRowSize.tooltip": "Il numero massimo di items per ogni riga\nPotrebbe non funzionare su contenitori moddati.",
   "text.autoconfig.shulkerboxtooltip.option.preview.enable": "Attiva Anteprima",

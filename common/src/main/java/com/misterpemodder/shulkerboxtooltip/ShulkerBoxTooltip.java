@@ -3,35 +3,25 @@ package com.misterpemodder.shulkerboxtooltip;
 import com.misterpemodder.shulkerboxtooltip.api.ShulkerBoxTooltipApi;
 import com.misterpemodder.shulkerboxtooltip.api.color.ColorKey;
 import com.misterpemodder.shulkerboxtooltip.api.color.ColorRegistry;
-import com.misterpemodder.shulkerboxtooltip.api.provider.PreviewProvider;
 import com.misterpemodder.shulkerboxtooltip.api.provider.PreviewProviderRegistry;
 import com.misterpemodder.shulkerboxtooltip.impl.config.Configuration;
 import com.misterpemodder.shulkerboxtooltip.impl.config.ConfigurationHandler;
 import com.misterpemodder.shulkerboxtooltip.impl.network.ServerNetworking;
-import com.misterpemodder.shulkerboxtooltip.impl.provider.BlockEntityAwarePreviewRenderer;
-import com.misterpemodder.shulkerboxtooltip.impl.provider.EnderChestPreviewProvider;
-import com.misterpemodder.shulkerboxtooltip.impl.provider.ShulkerBoxPreviewProvider;
+import com.misterpemodder.shulkerboxtooltip.impl.provider.*;
 import com.misterpemodder.shulkerboxtooltip.impl.util.NamedLogger;
 import com.misterpemodder.shulkerboxtooltip.impl.util.ShulkerBoxTooltipUtil;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.*;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.*;
 import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.nio.file.Path;
-import java.util.function.BiFunction;
-import java.util.function.Supplier;
 
 @ApiStatus.Internal
 @ParametersAreNonnullByDefault
@@ -55,44 +45,47 @@ public class ShulkerBoxTooltip implements ShulkerBoxTooltipApi {
     ServerNetworking.init();
   }
 
-  private static void register(PreviewProviderRegistry registry, String id, PreviewProvider provider, Item... items) {
-    registry.register(ShulkerBoxTooltipUtil.id(id), provider, items);
-  }
-
-  private static <BE extends BlockEntity & Inventory> void register(PreviewProviderRegistry registry, String id,
-      int maxRowSize, BiFunction<Integer, Supplier<BE>, PreviewProvider> providerFactory,
-      BiFunction<BlockPos, BlockState, BE> blockEntityFactory, Block... blocks) {
-    for (var block : blocks) {
-      var provider = providerFactory.apply(maxRowSize,
-          () -> blockEntityFactory.apply(BlockPos.ORIGIN, block.getDefaultState()));
-      registry.register(ShulkerBoxTooltipUtil.id(id), provider, block.asItem());
-    }
-  }
-
   @Override
   public void registerProviders(PreviewProviderRegistry registry) {
-    register(registry, "shulker_box", 9, ShulkerBoxPreviewProvider::new, ShulkerBoxBlockEntity::new, Blocks.SHULKER_BOX,
-        Blocks.WHITE_SHULKER_BOX, Blocks.ORANGE_SHULKER_BOX, Blocks.MAGENTA_SHULKER_BOX, Blocks.LIGHT_BLUE_SHULKER_BOX,
-        Blocks.YELLOW_SHULKER_BOX, Blocks.LIME_SHULKER_BOX, Blocks.PINK_SHULKER_BOX, Blocks.GRAY_SHULKER_BOX,
-        Blocks.LIGHT_GRAY_SHULKER_BOX, Blocks.CYAN_SHULKER_BOX, Blocks.PURPLE_SHULKER_BOX, Blocks.BLUE_SHULKER_BOX,
-        Blocks.BROWN_SHULKER_BOX, Blocks.GREEN_SHULKER_BOX, Blocks.RED_SHULKER_BOX, Blocks.BLACK_SHULKER_BOX);
-    register(registry, "chest_like", 9, BlockEntityAwarePreviewRenderer::new, ChestBlockEntity::new, Blocks.CHEST,
-        Blocks.TRAPPED_CHEST, Blocks.BARREL);
-    register(registry, "furnace_like", 3, BlockEntityAwarePreviewRenderer::new, FurnaceBlockEntity::new,
-        Blocks.FURNACE);
-    register(registry, "furnace_like", 3, BlockEntityAwarePreviewRenderer::new, BlastFurnaceBlockEntity::new,
-        Blocks.BLAST_FURNACE);
-    register(registry, "furnace_like", 3, BlockEntityAwarePreviewRenderer::new, SmokerBlockEntity::new,
-        Blocks.SMOKER);
-    register(registry, "dropper_like", 9, BlockEntityAwarePreviewRenderer::new, DropperBlockEntity::new,
-        Blocks.DROPPER);
-    register(registry, "dropper_like", 9, BlockEntityAwarePreviewRenderer::new, DispenserBlockEntity::new,
-        Blocks.DISPENSER);
-    register(registry, "hopper", 5, BlockEntityAwarePreviewRenderer::new, BrewingStandBlockEntity::new,
-        Blocks.HOPPER);
-    register(registry, "brewing_stand", 5, BlockEntityAwarePreviewRenderer::new, BrewingStandBlockEntity::new,
-        Blocks.BREWING_STAND);
-    register(registry, "ender_chest", new EnderChestPreviewProvider(), Items.ENDER_CHEST);
+    // @formatter:off
+    new FixedPreviewProviderRegistry<>(registry, ShulkerBoxPreviewProvider::new)
+        .register("shulker_box", 9, ShulkerBoxBlockEntity::new, Blocks.SHULKER_BOX)
+        .register("white_shulker_box", 9, ShulkerBoxBlockEntity::new, Blocks.WHITE_SHULKER_BOX)
+        .register("orange_shulker_box", 9, ShulkerBoxBlockEntity::new, Blocks.ORANGE_SHULKER_BOX)
+        .register("magenta_shulker_box", 9, ShulkerBoxBlockEntity::new, Blocks.MAGENTA_SHULKER_BOX)
+        .register("light_blue_shulker_box", 9, ShulkerBoxBlockEntity::new, Blocks.LIGHT_BLUE_SHULKER_BOX)
+        .register("yellow_shulker_box", 9, ShulkerBoxBlockEntity::new, Blocks.YELLOW_SHULKER_BOX)
+        .register("lime_shulker_box", 9, ShulkerBoxBlockEntity::new, Blocks.LIME_SHULKER_BOX)
+        .register("pink_shulker_box", 9, ShulkerBoxBlockEntity::new, Blocks.PINK_SHULKER_BOX)
+        .register("gray_shulker_box", 9, ShulkerBoxBlockEntity::new, Blocks.GRAY_SHULKER_BOX)
+        .register("light_gray_shulker_box", 9, ShulkerBoxBlockEntity::new, Blocks.LIGHT_GRAY_SHULKER_BOX)
+        .register("cyan_shulker_box", 9, ShulkerBoxBlockEntity::new, Blocks.CYAN_SHULKER_BOX)
+        .register("purple_shulker_box", 9, ShulkerBoxBlockEntity::new, Blocks.PURPLE_SHULKER_BOX)
+        .register("blue_shulker_box", 9, ShulkerBoxBlockEntity::new, Blocks.BLUE_SHULKER_BOX)
+        .register("brown_shulker_box", 9, ShulkerBoxBlockEntity::new, Blocks.BROWN_SHULKER_BOX)
+        .register("green_shulker_box", 9, ShulkerBoxBlockEntity::new, Blocks.GREEN_SHULKER_BOX)
+        .register("red_shulker_box", 9, ShulkerBoxBlockEntity::new, Blocks.RED_SHULKER_BOX)
+        .register("black_shulker_box", 9, ShulkerBoxBlockEntity::new, Blocks.BLACK_SHULKER_BOX);
+
+    new FixedPreviewProviderRegistry<>(registry, InventoryAwarePreviewProvider::new)
+        .register("chest", 9, ChestBlockEntity::new, Blocks.CHEST)
+        .register("trapped_chest", 9, TrappedChestBlockEntity::new, Blocks.CHEST)
+        .register("barrel", 9, BarrelBlockEntity::new, Blocks.BARREL)
+        .register("furnace", 3, FurnaceBlockEntity::new, Blocks.FURNACE)
+        .register("blast_furnace", 3, BlastFurnaceBlockEntity::new, Blocks.BLAST_FURNACE)
+        .register("smoker", 3, SmokerBlockEntity::new, Blocks.SMOKER)
+        .register("dropper", 3, DropperBlockEntity::new, Blocks.DROPPER)
+        .register("dispenser", 3, DispenserBlockEntity::new, Blocks.DISPENSER)
+        .register("hopper", 5, HopperBlockEntity::new, Blocks.HOPPER)
+        .register("brewing_stand", 7, BrewingStandBlockEntity::new, Blocks.BREWING_STAND)
+        .register("chiseled_bookshelf", 3, ChiseledBookShelfBlockEntity::new, Blocks.CHISELED_BOOKSHELF)
+        .register("decorated_pot", 1, DecoratedPotBlockEntity::new, Blocks.DECORATED_POT);
+
+    new FixedPreviewProviderRegistry<>(registry, LecternPreviewProvider::new)
+        .register("lectern", 1, (pos, state) -> new LecternBlockEntity(pos, state).bookAccess, Blocks.LECTERN);
+
+    registry.register(ShulkerBoxTooltipUtil.id("ender_chest"), new EnderChestPreviewProvider(), Items.ENDER_CHEST);
+    // @formatter:on
   }
 
   @Override

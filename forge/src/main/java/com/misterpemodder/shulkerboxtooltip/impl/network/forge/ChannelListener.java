@@ -23,6 +23,7 @@ import net.minecraftforge.network.EventNetworkChannel;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 @Mod.EventBusSubscriber(modid = ShulkerBoxTooltip.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 final class ChannelListener {

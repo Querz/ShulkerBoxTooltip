@@ -1,18 +1,18 @@
 package com.misterpemodder.shulkerboxtooltip.mixin.client;
 
-import com.misterpemodder.shulkerboxtooltip.impl.hook.DrawContextExtensions;
-import com.misterpemodder.shulkerboxtooltip.impl.tooltip.PositionAwareTooltipComponent;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
+import com.misterpemodder.shulkerboxtooltip.impl.hook.GuiGraphicsExtensions;
+import com.misterpemodder.shulkerboxtooltip.impl.tooltip.PositionAwareClientTooltipComponent;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import org.spongepowered.asm.mixin.Intrinsic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-@Mixin(DrawContext.class)
-public class DrawContextMixin implements DrawContextExtensions {
+@Mixin(GuiGraphics.class)
+public class GuiGraphicsMixin implements GuiGraphicsExtensions {
   @Unique
   private int tooltipTopYPosition = 0;
   @Unique
@@ -22,18 +22,17 @@ public class DrawContextMixin implements DrawContextExtensions {
   @Unique
   private int mouseY = 0;
 
-  @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/tooltip/TooltipComponent;"
-      + "drawItems(Lnet/minecraft/client/font/TextRenderer;IILnet/minecraft/client/gui/DrawContext;)V"), method =
-      "Lnet/minecraft/client/gui/DrawContext;drawTooltip("
-          + "Lnet/minecraft/client/font/TextRenderer;Ljava/util/List;II"
-          + "Lnet/minecraft/client/gui/tooltip/TooltipPositioner;)V")
-  private void drawPosAwareComponent(TooltipComponent component, TextRenderer textRenderer, int x, int y,
-      DrawContext context) {
-    if (component instanceof PositionAwareTooltipComponent posAwareComponent) {
-      posAwareComponent.drawItemsWithTooltipPosition(textRenderer, x, y, context, this.getTooltipTopYPosition(),
+  @Redirect(at = @At(value = "INVOKE", target =
+      "Lnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipComponent;"
+          + "renderImage(Lnet/minecraft/client/gui/Font;IILnet/minecraft/client/gui/GuiGraphics;)V"), method =
+      "renderTooltipInternal(" + "Lnet/minecraft/client/gui/Font;Ljava/util/List;II"
+          + "Lnet/minecraft/client/gui/screens/inventory/tooltip/ClientTooltipPositioner;)V")
+  private void drawPosAwareComponent(ClientTooltipComponent component, Font font, int x, int y, GuiGraphics graphics) {
+    if (component instanceof PositionAwareClientTooltipComponent posAwareComponent) {
+      posAwareComponent.drawItemsWithTooltipPosition(font, x, y, graphics, this.getTooltipTopYPosition(),
           this.getTooltipBottomYPosition(), this.getMouseX(), this.getMouseY());
     } else {
-      component.drawItems(textRenderer, x, y, context);
+      component.renderImage(font, x, y, graphics);
     }
   }
 

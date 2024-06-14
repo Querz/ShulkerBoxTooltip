@@ -3,14 +3,14 @@ package com.misterpemodder.shulkerboxtooltip.impl.renderer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.tooltip.BundleTooltipComponent;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientBundleTooltip;
+import net.minecraft.resources.ResourceLocation;
 
 @Environment(EnvType.CLIENT)
 public class VanillaPreviewRenderer extends BasePreviewRenderer {
-  public static final Identifier DEFAULT_TEXTURE = new Identifier("container/bundle/background");
+  public static final ResourceLocation DEFAULT_TEXTURE = new ResourceLocation("container/bundle/background");
   public static final VanillaPreviewRenderer INSTANCE = new VanillaPreviewRenderer();
 
   VanillaPreviewRenderer() {
@@ -40,29 +40,30 @@ public class VanillaPreviewRenderer extends BasePreviewRenderer {
   }
 
   @Override
-  public void draw(int x, int y, DrawContext context, TextRenderer textRenderer, int mouseX, int mouseY) {
+  public void draw(int x, int y, GuiGraphics graphics, Font font, int mouseX, int mouseY) {
     ++y;
     RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
     RenderSystem.enableDepthTest();
 
-    Identifier texture = this.getTexture();
+    ResourceLocation texture = this.getTexture();
 
-    context.drawGuiTexture(texture, x, y, this.getColumnsWidth(), this.getHeight());
+    graphics.blitSprite(texture, x, y, this.getColumnsWidth(), this.getHeight());
 
-    var sprite = BundleTooltipComponent.Sprite.SLOT;
+    var sprite = ClientBundleTooltip.Texture.SLOT;
     for (int slotY = 0; slotY < this.getRowCount(); ++slotY) {
       for (int slotX = 0; slotX < this.getColumnCount(); ++slotX) {
         int px = x + slotX * 18 + 1;
         int py = y + slotY * 20 + 1;
-        context.drawGuiTexture(sprite.texture, px, py, 0, sprite.width, sprite.height);
+        graphics.blitSprite(sprite.sprite, px, py, 0, sprite.w, sprite.h);
       }
     }
 
-    this.drawItems(x, y, context, textRenderer);
-    this.drawInnerTooltip(x, y, context, textRenderer, mouseX, mouseY);
+    this.drawSlotHighlight(x, y, graphics, mouseX, mouseY);
+    this.drawItems(x, y, graphics, font);
+    this.drawInnerTooltip(x, y, graphics, font, mouseX, mouseY);
   }
 
-  private Identifier getTexture() {
+  private ResourceLocation getTexture() {
     if (this.textureOverride == null)
       return DEFAULT_TEXTURE;
     else

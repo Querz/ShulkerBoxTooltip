@@ -1,0 +1,43 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+issueTrackerURL = "https://github.com/MisterPeModder/ShulkerBoxTooltip/issues"
+displayURL = "https://www.curseforge.com/minecraft/mc-mods/shulkerboxtooltip/"
+license = "MIT"
+
+[[mods]]
+modId = "shulkerboxtooltip"
+version = "${version}"
+displayName = "ShulkerBoxTooltip"
+authors = "MisterPeModder"
+description = "What''s in my shulker box?"
+logoFile = "icon.png"
+
+[[mixins]]
+config = "shulkerboxtooltip-common.mixins.json"
+
+[[mixins]]
+config = "shulkerboxtooltip-neoforge.mixins.json"
+
+[[accessTransformers]]
+file = "META-INF/accesstransformer.cfg"
+
+[[dependencies.shulkerboxtooltip]]
+modId = "neoforge"
+mandatory = true
+versionRange = "[20.6.0-beta,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.shulkerboxtooltip]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.20.6,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.shulkerboxtooltip]]
+modId = "cloth_config"
+mandatory = true
+versionRange = "[14.0.0,)"
+ordering = "NONE"
+side = "BOTH"

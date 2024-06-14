@@ -4,16 +4,18 @@ import com.misterpemodder.shulkerboxtooltip.ShulkerBoxTooltip;
 import com.misterpemodder.shulkerboxtooltip.api.PreviewContext;
 import com.misterpemodder.shulkerboxtooltip.api.PreviewType;
 import com.misterpemodder.shulkerboxtooltip.api.ShulkerBoxTooltipApi;
-import net.minecraft.inventory.Inventories;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.SeededContainerLoot;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -27,7 +29,7 @@ import java.util.List;
  * </p>
  * <p>
  * Use/extend this when the target item(s) has the {@code Inventory} inside {@code BlockEntityData}
- * as created by {@link Inventories#writeNbt(NbtCompound, DefaultedList)}.
+ * as created by {@link ContainerHelper#saveAllItems(CompoundTag, NonNullList, HolderLookup.Provider)}.
  * </p>
  *
  * @since 1.3.0
@@ -35,18 +37,21 @@ import java.util.List;
 public class BlockEntityPreviewProvider implements PreviewProvider {
   /**
    * The maximum preview inventory size of the item (maybe lower than the actual inventory size).
+   *
    * @deprecated Use {@link #getInventoryMaxSize(PreviewContext)} instead.
    */
   @Deprecated(since = "4.0.8", forRemoval = true)
   protected final int maxInvSize;
   /**
    * If true, previews will not be shown when the {@code LootTable} tag inside {@code BlockEntityData} is present.
+   *
    * @deprecated Use {@link #canUseLootTables()} instead.
    */
   @Deprecated(since = "4.0.8", forRemoval = true)
   protected final boolean canUseLootTables;
   /**
    * The maximum number of item stacks to be displayed in a row.
+   *
    * @deprecated Use {@link #getMaxRowSize(PreviewContext)} instead.
    */
   @Deprecated(since = "4.0.8", forRemoval = true)
@@ -92,41 +97,26 @@ public class BlockEntityPreviewProvider implements PreviewProvider {
 
   @Override
   public boolean shouldDisplay(PreviewContext context) {
-    NbtCompound blockEntityTag = context.stack().getSubNbt("BlockEntityTag");
-
-    if (blockEntityTag == null || (this.canUseLootTables() && blockEntityTag.contains("LootTable", 8)))
+    if (this.canUseLootTables() && context.stack().has(DataComponents.CONTAINER_LOOT))
       return false;
     return getItemCount(this.getInventory(context)) > 0;
   }
 
   @Override
   public boolean showTooltipHints(PreviewContext context) {
-    return context.stack().getSubNbt("BlockEntityTag") != null;
+    return context.stack().has(DataComponents.CONTAINER);
   }
 
   @Override
   public List<ItemStack> getInventory(PreviewContext context) {
-    int invMaxSize = this.getInventoryMaxSize(context);
-    List<ItemStack> inv = DefaultedList.ofSize(invMaxSize, ItemStack.EMPTY);
-    NbtCompound blockEntityTag = context.stack().getSubNbt("BlockEntityTag");
+    var registries = context.registryLookup();
+    var container = context.stack().get(DataComponents.CONTAINER);
+    var invMaxSize = this.getInventoryMaxSize(context);
+    var inv = NonNullList.withSize(invMaxSize, ItemStack.EMPTY);
 
-    if (blockEntityTag != null && blockEntityTag.contains("Items", 9)) {
-      NbtList itemList = blockEntityTag.getList("Items", 10);
+    if (registries != null && container != null)
+      container.copyInto(inv);
 
-      if (itemList != null) {
-        for (int i = 0, len = itemList.size(); i < len; ++i) {
-          NbtCompound itemTag = itemList.getCompound(i);
-          ItemStack s = ItemStack.fromNbt(itemTag);
-
-          if (!itemTag.contains("Slot", 99))
-            continue;
-          int slot = itemTag.getInt("Slot");
-
-          if (slot >= 0 && slot < invMaxSize)
-            inv.set(slot, s);
-        }
-      }
-    }
     return inv;
   }
 
@@ -136,25 +126,20 @@ public class BlockEntityPreviewProvider implements PreviewProvider {
   }
 
   @Override
-  public List<Text> addTooltip(PreviewContext context) {
+  public List<Component> addTooltip(PreviewContext context) {
     ItemStack stack = context.stack();
-    NbtCompound compound = stack.getNbt();
-    Style style = Style.EMPTY.withColor(Formatting.GRAY);
+    SeededContainerLoot lootComponent = stack.get(DataComponents.CONTAINER_LOOT);
+    Style style = Style.EMPTY.withColor(ChatFormatting.GRAY);
 
-    if (this.canUseLootTables() && compound != null && compound.contains("BlockEntityTag", 10)) {
-      NbtCompound blockEntityTag = compound.getCompound("BlockEntityTag");
-
-      if (blockEntityTag != null && blockEntityTag.contains("LootTable", 8)) {
-        return switch (ShulkerBoxTooltip.config.tooltip.lootTableInfoType) {
-          case HIDE -> Collections.emptyList();
-          case SIMPLE -> Collections.singletonList(
-            Text.translatable("shulkerboxtooltip.hint.lootTable").setStyle(style));
-          default -> Arrays.asList(
-            Text.translatable("shulkerboxtooltip.hint.lootTable.advanced")
-              .append(Text.literal(": ")),
-            Text.literal(" " + blockEntityTag.getString("LootTable")).setStyle(style));
-        };
-      }
+    if (this.canUseLootTables() && lootComponent != null) {
+      return switch (ShulkerBoxTooltip.config.tooltip.lootTableInfoType) {
+        case HIDE -> Collections.emptyList();
+        case SIMPLE -> Collections.singletonList(
+            Component.translatable("shulkerboxtooltip.hint.lootTable").setStyle(style));
+        default -> Arrays.asList(
+            Component.translatable("shulkerboxtooltip.hint.lootTable.advanced").append(Component.literal(": ")),
+            Component.literal(" " + lootComponent.lootTable().location()).setStyle(style));
+      };
     }
     if (ShulkerBoxTooltipApi.getCurrentPreviewType(this.isFullPreviewAvailable(context)) == PreviewType.FULL)
       return Collections.emptyList();
@@ -169,9 +154,8 @@ public class BlockEntityPreviewProvider implements PreviewProvider {
    * @return The passed tooltip, to allow chaining.
    * @since 2.0.0
    */
-  public static List<Text> getItemCountTooltip(List<Text> tooltip,
-    @Nullable List<ItemStack> items) {
-    return getItemListTooltip(tooltip, items, Style.EMPTY.withColor(Formatting.GRAY));
+  public static List<Component> getItemCountTooltip(List<Component> tooltip, @Nullable List<ItemStack> items) {
+    return getItemListTooltip(tooltip, items, Style.EMPTY.withColor(ChatFormatting.GRAY));
   }
 
   /**
@@ -183,15 +167,15 @@ public class BlockEntityPreviewProvider implements PreviewProvider {
    * @return The passed tooltip, to allow chaining.
    * @since 2.0.0
    */
-  public static List<Text> getItemListTooltip(List<Text> tooltip, @Nullable List<ItemStack> items,
-    Style style) {
+  public static List<Component> getItemListTooltip(List<Component> tooltip, @Nullable List<ItemStack> items,
+      Style style) {
     int itemCount = getItemCount(items);
-    MutableText text;
+    MutableComponent text;
 
     if (itemCount > 0)
-      text = Text.translatable("container.shulkerbox.contains", itemCount);
+      text = Component.translatable("container.shulkerbox.contains", itemCount);
     else
-      text = Text.translatable("container.shulkerbox.empty");
+      text = Component.translatable("container.shulkerbox.empty");
     tooltip.add(text.setStyle(style));
     return tooltip;
   }
@@ -203,6 +187,7 @@ public class BlockEntityPreviewProvider implements PreviewProvider {
 
   /**
    * If true, previews will not be shown when the {@code LootTable} tag inside {@code BlockEntityData} is present.
+   *
    * @since 4.0.8
    */
   public boolean canUseLootTables() {

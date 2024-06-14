@@ -17,8 +17,6 @@
   "text.autoconfig.shulkerboxtooltip.category.server": "伺服器",
   "text.autoconfig.shulkerboxtooltip.option.preview.alwaysOn": "總是啟用",
   "text.autoconfig.shulkerboxtooltip.option.preview.alwaysOn.tooltip": "若啟用，預覽將始終顯示，\n無論是否按下預覽鍵。",
-  "text.autoconfig.shulkerboxtooltip.option.preview.compactPreviewNbtBehavior": "緊湊預覽 NBT",
-  "text.autoconfig.shulkerboxtooltip.option.preview.compactPreviewNbtBehavior.tooltip": "在緊湊模式，具有相同 ID\n但不同 NBT 數據的物品應如何緊湊？\n忽略：\n忽略 NBT 資料\n第一個物品：\n物品顯示為所有具有第一個物品相同 NBT\n分開：\n分隔具有不同 NBT 資料的物品",
   "text.autoconfig.shulkerboxtooltip.option.preview.defaultMaxRowSize": "最大行大小",
   "text.autoconfig.shulkerboxtooltip.option.preview.defaultMaxRowSize.tooltip": "一行中的最大物品數\n可能不會影響模組容器。",
   "text.autoconfig.shulkerboxtooltip.option.preview.enable": "啟用預覽",

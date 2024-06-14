@@ -1,23 +1,23 @@
 package com.misterpemodder.shulkerboxtooltip.impl.network.message;
 
-import com.misterpemodder.shulkerboxtooltip.impl.network.context.MessageContext;
 import com.misterpemodder.shulkerboxtooltip.impl.network.context.C2SMessageContext;
+import com.misterpemodder.shulkerboxtooltip.impl.network.context.MessageContext;
 import com.misterpemodder.shulkerboxtooltip.impl.network.context.S2CMessageContext;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 
 /**
  * Describes a message.
  *
- * @param <MSG> The message data.
+ * @param <T> The message data.
  */
-public interface MessageType<MSG> {
+public interface MessageType<T> {
   /**
    * Writes the message to the packet byte buffer.
    *
    * @param message The message to encode.
    * @param buf     The buffer.
    */
-  void encode(MSG message, PacketByteBuf buf);
+  void encode(T message, FriendlyByteBuf buf);
 
   /**
    * Reads a message from the given buffer.
@@ -25,7 +25,7 @@ public interface MessageType<MSG> {
    * @param buf The buffer.
    * @return The decoded message.
    */
-  MSG decode(PacketByteBuf buf);
+  T decode(FriendlyByteBuf buf);
 
   /**
    * Handles the given message.
@@ -33,14 +33,14 @@ public interface MessageType<MSG> {
    * @param message The message to handle.
    * @param context Either an instance of {@link C2SMessageContext} or {@link S2CMessageContext}
    */
-  void onReceive(MSG message, MessageContext<MSG> context);
+  void onReceive(T message, MessageContext<T> context);
 
   /**
    * Called when the message is registered.
    *
    * @param context Either an instance of {@link C2SMessageContext} or {@link S2CMessageContext}
    */
-  default void onRegister(MessageContext<MSG> context) {
+  default void onRegister(MessageContext<T> context) {
   }
 
   /**
@@ -48,6 +48,6 @@ public interface MessageType<MSG> {
    *
    * @param context Either an instance of {@link C2SMessageContext} or {@link S2CMessageContext}
    */
-  default void onUnregister(MessageContext<MSG> context) {
+  default void onUnregister(MessageContext<T> context) {
   }
 }

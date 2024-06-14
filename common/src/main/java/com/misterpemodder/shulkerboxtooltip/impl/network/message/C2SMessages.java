@@ -7,21 +7,24 @@ import com.misterpemodder.shulkerboxtooltip.impl.network.channel.C2SChannel;
 import com.misterpemodder.shulkerboxtooltip.impl.util.ShulkerBoxTooltipUtil;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 
 /**
  * The client to server messages of ShulkerBoxTooltip.
  */
 public final class C2SMessages {
-  public static final C2SChannel<C2SHandshakeStart> HANDSHAKE_START = new C2SChannel<>(
+  public static final C2SChannel<C2SHandshakeStart> HANDSHAKE_START = ClientNetworking.createC2SChannel(
       ShulkerBoxTooltipUtil.id("c2s_handshake"), new C2SHandshakeStart.Type());
-  public static final C2SChannel<C2SEnderChestUpdateRequest> ENDER_CHEST_UPDATE_REQUEST = new C2SChannel<>(
-      ShulkerBoxTooltipUtil.id("ec_update_req"), new C2SEnderChestUpdateRequest.Type());
+  public static final C2SChannel<C2SEnderChestUpdateRequest> ENDER_CHEST_UPDATE_REQUEST =
+      ClientNetworking.createC2SChannel(ShulkerBoxTooltipUtil.id("ec_update_req"),
+          new C2SEnderChestUpdateRequest.Type());
 
-  /**
-   * Guarantees the initialization of the static members.
-   */
-  public static void init() {
+  private C2SMessages() {
+  }
+
+  public static void registerPayloadTypes() {
+    HANDSHAKE_START.registerPayloadType();
+    ENDER_CHEST_UPDATE_REQUEST.registerPayloadType();
   }
 
   @Environment(EnvType.CLIENT)
@@ -35,7 +38,7 @@ public final class C2SMessages {
    *
    * @param player The player.
    */
-  public static void registerAllFor(ServerPlayerEntity player) {
+  public static void registerAllFor(ServerPlayer player) {
     HANDSHAKE_START.registerFor(player);
     ENDER_CHEST_UPDATE_REQUEST.registerFor(player);
   }

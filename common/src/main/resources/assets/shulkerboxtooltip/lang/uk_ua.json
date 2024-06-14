@@ -16,8 +16,6 @@
   "text.autoconfig.shulkerboxtooltip.category.server": "Сервер",
   "text.autoconfig.shulkerboxtooltip.option.preview.alwaysOn": "Постійне відображення",
   "text.autoconfig.shulkerboxtooltip.option.preview.alwaysOn.tooltip": "Попередній перегляд буде відображатись завжди,\nнезалежно від натискання відповідної йому клавіші.",
-  "text.autoconfig.shulkerboxtooltip.option.preview.compactPreviewNbtBehavior": "Спосіб компактного перегляду NBT",
-  "text.autoconfig.shulkerboxtooltip.option.preview.compactPreviewNbtBehavior.tooltip": "Як в компактному режимі повинні відображатися\nпредмети з однаковим id, але з різними данними nbt?\n • Ігнорувати\n Данні nbt не враховуються\n • За першим предметом\n Всі предмети будуть показуватись\nс тим же nbt, що і у першого предмета\n • Окремо\n Предмети з різним nbt завжди будуть\nпоказуватись окремо",
   "text.autoconfig.shulkerboxtooltip.option.preview.defaultMaxRowSize": "Максимум стовбців",
   "text.autoconfig.shulkerboxtooltip.option.preview.defaultMaxRowSize.tooltip": "Максимальна кількість стовбців для відображення\nв компактному режимі.\nМоже не впливати на сховища з модів.",
   "text.autoconfig.shulkerboxtooltip.option.preview.enable": "Попередній перегляд",

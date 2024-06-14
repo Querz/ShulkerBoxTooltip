@@ -1,9 +1,9 @@
 package com.misterpemodder.shulkerboxtooltip.impl.network.context;
 
 import com.misterpemodder.shulkerboxtooltip.impl.network.channel.Channel;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.entity.player.Player;
 
-public sealed interface MessageContext<MSG> permits C2SMessageContext, S2CMessageContext {
+public sealed interface MessageContext<T> permits C2SMessageContext, S2CMessageContext {
   /**
    * Executes the given task in the server/client's main thread.
    *
@@ -11,9 +11,9 @@ public sealed interface MessageContext<MSG> permits C2SMessageContext, S2CMessag
    */
   void execute(Runnable task);
 
-  PlayerEntity getPlayer();
+  Player getPlayer();
 
-  Channel<MSG> getChannel();
+  Channel<T> getChannel();
 
   Side getReceivingSide();
 

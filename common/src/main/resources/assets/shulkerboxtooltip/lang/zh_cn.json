@@ -16,8 +16,6 @@
   "text.autoconfig.shulkerboxtooltip.category.server": "服务端",
   "text.autoconfig.shulkerboxtooltip.option.preview.alwaysOn": "预览浮窗常亮",
   "text.autoconfig.shulkerboxtooltip.option.preview.alwaysOn.tooltip": "选择§2是§r后, 不论是否按下快捷键,\n预览浮窗都会在光标覆盖于容器物品上时直接显示。",
-  "text.autoconfig.shulkerboxtooltip.option.preview.compactPreviewNbtBehavior": "“简略浮窗” 的 NBT 分组标准",
-  "text.autoconfig.shulkerboxtooltip.option.preview.compactPreviewNbtBehavior.tooltip": "在 “简略浮窗” 中, \n拥有不同 NBT 标签的同种物品应该如何显示? \n§c - 忽略 NBT\n    合并显示同种物品, 忽略 NBT 标签\n§l - 首个 NBT\n    合并显示同种物品, 物品图标取决于\n    首个物品的 NBT 标签\n§a - 每个 NBT\n    分开显示拥有不同 NBT 标签的同种物品",
   "text.autoconfig.shulkerboxtooltip.option.preview.defaultMaxRowSize": "每排最大格数",
   "text.autoconfig.shulkerboxtooltip.option.preview.defaultMaxRowSize.tooltip": "预览浮窗中每排最多显示的格数\n§7( 可能无法作用于模组的容器 )",
   "text.autoconfig.shulkerboxtooltip.option.preview.enable": "启用预览浮窗",

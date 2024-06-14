@@ -1,10 +1,10 @@
 package com.misterpemodder.shulkerboxtooltip.api;
 
-import com.misterpemodder.shulkerboxtooltip.ShulkerBoxTooltip;
 import com.misterpemodder.shulkerboxtooltip.api.config.PreviewConfiguration;
 import com.misterpemodder.shulkerboxtooltip.impl.PreviewContextImpl;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nonnull;
@@ -22,11 +22,13 @@ public interface PreviewContext {
    * @param stack The stack.
    * @return The created preview context
    * @since 2.0.0
+   * @deprecated Use {@link #builder(ItemStack)} instead.
    */
   @Nonnull
   @Contract("_ -> new")
+  @Deprecated(since = "4.1.0", forRemoval = true)
   static PreviewContext of(ItemStack stack) {
-    return new PreviewContextImpl(stack.copy(), null, ShulkerBoxTooltip.config);
+    return builder(stack).build();
   }
 
   /**
@@ -36,11 +38,28 @@ public interface PreviewContext {
    * @param owner The owner, may be null.
    * @return The created preview context
    * @since 2.0.0
+   * @deprecated Use {@link #builder(ItemStack)} instead.
    */
   @Nonnull
   @Contract("_, _ -> new")
-  static PreviewContext of(ItemStack stack, @Nullable PlayerEntity owner) {
-    return new PreviewContextImpl(stack.copy(), owner, ShulkerBoxTooltip.config);
+  @Deprecated(since = "4.1.0", forRemoval = true)
+  static PreviewContext of(ItemStack stack, @Nullable Player owner) {
+    return builder(stack).withOwner(owner).build();
+  }
+
+  /**
+   * Creates a new {@link PreviewContext.Builder} instance.
+   * <p>
+   * This is the recommended way to create a {@link PreviewContext} instance as of 4.1.0.
+   *
+   * @param stack The stack to create the context with, may not be null.
+   * @return a new {@link PreviewContext.Builder} instance.
+   * @since 4.1.0
+   */
+  @Nonnull
+  @Contract("_ -> new")
+  static PreviewContext.Builder builder(ItemStack stack) {
+    return new PreviewContextImpl.Builder(stack);
   }
 
   /**
@@ -59,7 +78,7 @@ public interface PreviewContext {
    * @since 3.1.0
    */
   @Nullable
-  PlayerEntity owner();
+  Player owner();
 
   /**
    * @return the configuration in use for this context.
@@ -67,4 +86,45 @@ public interface PreviewContext {
    */
   @Nonnull
   PreviewConfiguration config();
+
+  /**
+   * @return the registry lookup for this context, if available.
+   * @since 4.1.0
+   */
+  @Nullable
+  HolderLookup.Provider registryLookup();
+
+  /**
+   * A builder for creating {@link PreviewContext} instances.
+   *
+   * @since 4.1.0
+   */
+  interface Builder {
+    /**
+     * @param owner The owner of the item stack, may be null.
+     * @return this builder instance for chaining.
+     * @since 4.1.0
+     */
+    Builder withOwner(@Nullable Player owner);
+
+    /**
+     * Sets the registry lookup to use for deserialization of the item stack.
+     * <p>
+     * Defaults to the owner's registry if not set.
+     *
+     * @param registryLookup The registry lookup for the item stack, may be null.
+     * @return this builder instance for chaining.
+     * @since 4.1.0
+     */
+    Builder withRegistryLookup(@Nullable HolderLookup.Provider registryLookup);
+
+    /**
+     * Builds the {@link PreviewContext} instance.
+     *
+     * @return a new {@link PreviewContext} instance.
+     * @since 4.1.0
+     */
+    @Nonnull
+    PreviewContext build();
+  }
 }

@@ -7,19 +7,19 @@ package com.misterpemodder.shulkerboxtooltip.api.config;
  */
 public enum ItemStackMergingStrategy {
   /**
-   * Ignore NBT data when merging item stacks.
+   * Ignore component data when merging item stacks.
    *
    * @since 3.3.0
    */
   IGNORE,
   /**
-   * Merge regardless of NBT data but use the NBT of the first item stack.
+   * Merge regardless of component data but use the NBT of the first item stack.
    *
    * @since 3.3.0
    */
   FIRST_ITEM,
   /**
-   * Do not merge stacks that differ in NBT data.
+   * Do not merge stacks that differ in component data.
    *
    * @since 3.3.0
    */

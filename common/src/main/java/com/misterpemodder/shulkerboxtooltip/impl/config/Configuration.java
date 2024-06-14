@@ -76,10 +76,10 @@ public final class Configuration implements ConfigData, PreviewConfiguration {
     @AutoTooltip
     @ConfigEntry.Gui.EnumHandler(option = EnumDisplayOption.BUTTON)
     @Comment("""
-        In compact mode, how should items with the same ID but different NBT data be compacted?
-        IGNORE: Ignores NBT data
-        FIRST_ITEM: Items are displayed as all having the same NBT as the first item
-        SEPARATE: Separates items with different NBT data
+        In compact mode, how should items with the same ID but different component data be compacted?
+        IGNORE: Ignores component data
+        FIRST_ITEM: Items are displayed as all having the same component as the first item
+        SEPARATE: Separates items with different component data
         (default value: SEPARATE)""")
     public ItemStackMergingStrategy compactPreviewNbtBehavior = ItemStackMergingStrategy.SEPARATE;
 
@@ -134,6 +134,7 @@ public final class Configuration implements ConfigData, PreviewConfiguration {
     }
   }
 
+
   public enum Theme {
     SHULKERBOXTOOLTIP, VANILLA;
 
@@ -142,6 +143,7 @@ public final class Configuration implements ConfigData, PreviewConfiguration {
       return "shulkerboxtooltip.theme." + this.name().toLowerCase();
     }
   }
+
 
   public enum PreviewPosition {
     INSIDE, OUTSIDE, OUTSIDE_TOP, OUTSIDE_BOTTOM;
